@@ -67,6 +67,7 @@ Vagrant.configure("2") do |config|
      apt-get update
      touch VM.sh
      echo "added and created in VM" > VM.sh
+     echo "appending random text" >> VM.sh
      apt-get install -y apache2
    SHELL
 end

@@ -1,1 +1,2 @@
-echo "printing the test"
+echo "printing the text"
+echo "printing random text"
