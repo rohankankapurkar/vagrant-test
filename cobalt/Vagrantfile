@@ -1,0 +1,39 @@
+Vagrant.configure("2") do |config|
+  config.vm.define "maasstack" do |maasstack|
+    maasstack.vm.box = "ubuntu-14.04-cobalt"
+    maasstack.proxy.http     = "http://proxy.pal.sap.corp:8080"
+    maasstack.proxy.https    = "https://proxy.pal.sap.corp:8080"
+    maasstack.proxy.no_proxy = "localhost,127.0.0.1,registry.mo.sap.corp,ariba.com,local"
+    maasstack.vm.box_url = "http://registry-glb.mo.sap.corp/api/vagrant/vagrant-dev-local/ubuntu-14.04-cobalt"
+    maasstack.vbguest.auto_update = false
+    maasstack.vm.box_download_insecure = true
+    maasstack.vm.network "private_network", ip: "192.168.33.11"
+    maasstack.vm.network :forwarded_port, guest: 8086, guest_ip:"10.0.2.15", host: 8087, host_ip:"0.0.0.0"
+    maasstack.vm.network :forwarded_port, guest: 8082, guest_ip:"10.0.2.15", host: 8088, host_ip:"0.0.0.0"
+    maasstack.vm.network :forwarded_port, guest: 8094, guest_ip:"10.0.2.15", host: 8099, host_ip:"0.0.0.0"
+    maasstack.vm.network :forwarded_port, guest: 8125, guest_ip:"10.0.2.15", host: 8128, host_ip:"0.0.0.0"
+    maasstack.vm.network :forwarded_port, guest: 9092, guest_ip:"10.0.2.15", host: 9098, host_ip:"0.0.0.0"
+    maasstack.vm.network :forwarded_port, guest: 3000, guest_ip:"10.0.2.15", host: 3008, host_ip:"0.0.0.0"
+
+    maasstack.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    end
+    # Sync up the project folder from laptop host
+    maasstack.vm.synced_folder ".", "/home/vagrant/MaaS-local-stack", :mount_options => ["dmode=755,fmode=755"]
+
+    # In case the box file has been updated, we want to pick up the changes
+    maasstack.vm.box_check_update = true
+
+    # Give a host name
+    maasstack.vm.hostname = "maasstack"
+
+    maasstack.vm.provision "shell", privileged: true, inline: <<-EOF
+      export http_proxy=http://proxy.pal.sap.corp:8080
+      export ftp_proxy=http://proxy.pal.sap.corp:8080
+      export https_proxy=https://proxy.pal.sap.corp:8080
+      no_proxy=localhost,127.0.0.1,registry.mo.sap.corp,.ariba.com,.local
+      echo "Vagrant Box provisioned!"
+    EOF
+  end
+
+end
